@@ -1,0 +1,13 @@
+monee_bigquery_profile:
+  target: prod
+  outputs:
+    prod:
+      type: bigquery
+      method: service-account
+      project: monee-fintech-prod
+      dataset: monee
+      threads: 8
+      keyfile: /opt/airflow/secrets/gcp_service_account.json
+      timeout_seconds: 600
+      location: asia-southeast2              
+      priority: batch 

@@ -1,0 +1,25 @@
+name: 'monee_regulatory_reporting'
+version: '1.0.0'
+config-version: 2
+
+profile: 'monee_bigquery_profile'
+
+model-paths: ["models"]
+test-paths: ["tests"]
+
+target-path: "target"
+clean-targets:
+  - "target"
+  - "dbt_packages"
+
+models:
+  monee_regulatory_reporting:
+    silver:
+      +materialized: incremental
+      +schema: silver
+    gold:
+      +materialized: incremental
+      +schema: gold
+    regulatory:
+      +materialized: view
+      +schema: regulatory

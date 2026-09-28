@@ -1,0 +1,56 @@
+pipeline_name: "bi_daily_user_summary"
+description: "Daily customer loan exposure summary sync to central bank SFTP destination"
+schedule: "0 4 * * *"  # Daily at 04:00 AM UTC
+enabled: true
+
+# Source Configuration
+source:
+  type: "data_warehouse"
+  query: |
+    SELECT 
+      report_date,
+      user_id,
+      name,
+      risk_segment,
+      active_loan_count,
+      overdue_loan_count,
+      total_principal,
+      total_outstanding
+    FROM monee_regulatory.daily_user_loan_summary
+    WHERE report_date = :watermark_date
+
+# Incremental Processing Strategy
+incremental:
+  strategy: "date_watermark"
+  watermark_column: "report_date"
+  batch_size: 1000
+
+# Field Mapping & Schema Transformation
+mapping:
+  report_date: "REPORT_DT"
+  user_id: "CIF_NO"
+  name: "CUSTOMER_NAME"
+  risk_segment: "RISK_GRADE"
+  active_loan_count: "ACTIVE_LOANS"
+  overdue_loan_count: "NPL_LOANS"
+  total_principal: "TOT_PRINCIPAL"
+  total_outstanding: "TOT_OUTSTANDING"
+
+# Destination Configuration
+destination:
+  type: "sftp"
+  host: "mock-portal-bi"
+  port: 22
+  auth:
+    type: "ssh_key"
+    secret_key_ref: "bi_sftp_private_key"  # Retrieved dynamically from Secret Vault
+  remote_dir: "/incoming/daily_reports/"
+  file_format: "csv"
+  filename_pattern: "MONEE_USER_SUMMARY_{report_date}.csv"
+
+# Reliability & Fault Tolerance
+reliability:
+  max_retries: 3
+  backoff_factor: 2.0
+  dlq_enabled: true
+  dlq_path: "s3://monee-audit-dlq/bi_user_summary/"

@@ -1,0 +1,56 @@
+pipeline_name: "ojk_daily_loan_performance"
+description: "Daily loan performance sync to regulatory portal REST API"
+schedule: "0 3 * * *"  # Daily at 03:00 AM UTC
+enabled: true
+
+# Source Configuration
+source:
+  type: "data_warehouse"
+  query: |
+    SELECT 
+      report_date,
+      loan_id,
+      user_id,
+      product_type,
+      loan_status,
+      principal_amount,
+      total_paid,
+      outstanding_principal
+    FROM monee_regulatory.daily_loan_performance
+    WHERE report_date = :watermark_date
+
+# Incremental Processing Strategy
+incremental:
+  strategy: "date_watermark"
+  watermark_column: "report_date"
+  batch_size: 500
+
+# Field Mapping & Schema Transformation
+mapping:
+  report_date: "REPORT_DATE"
+  loan_id: "LOAN_ID"
+  user_id: "CUSTOMER_ID"
+  product_type: "PRODUCT_CODE"
+  loan_status: "LOAN_STATUS"
+  principal_amount: "PRINCIPAL_AMOUNT"
+  total_paid: "TOTAL_PAID"
+  outstanding_principal: "OUTSTANDING_PRINCIPAL"
+
+# Destination Configuration
+destination:
+  type: "rest_api"
+  endpoint: "https://mock-portal-ojk/api/v1/loan-reports"
+  auth:
+    type: "bearer_token"
+    secret_key_ref: "ojk_api_token"  # Retrieved dynamically from Secret Vault
+  http_method: "POST"
+  headers:
+    Content-Type: "application/json"
+    X-Client-Id: "MONEE_FINTECH_001"
+
+# Reliability & Fault Tolerance
+reliability:
+  max_retries: 3
+  backoff_factor: 2.0
+  dlq_enabled: true
+  dlq_path: "s3://monee-audit-dlq/ojk_daily_loans/"

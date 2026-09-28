@@ -1,0 +1,37 @@
+# Declarative configuration for regulatory reporting pipelines.
+# Supports optional custom task_script or default generic dbt runner.
+regulatory_pipelines:
+  # Regulatory Output A (PDF Page 4)
+  - id: daily_loan_performance
+    name: "Regulatory Output A - Daily Loan Performance"
+    dbt_model: "daily_loan_performance"
+    task_script: "regulatory_output_daily_loan.py"
+    schedule: "0 6 * * *"
+    sla_time: "06:00"
+    active: true
+
+  # Regulatory Output B (PDF Pages 4 & 5)
+  - id: daily_user_loan_summary
+    name: "Regulatory Output B - Daily User Loan Summary"
+    dbt_model: "daily_user_loan_summary"
+    task_script: "regulatory_output_daily_user_loan_summary.py"
+    schedule: "0 6 * * *"
+    sla_time: "06:00"
+    active: true
+
+  # Regulatory Output C (Sample: OJK SLIK NPL)
+  - id: other_regulatory
+    name: "Regulatory Output C (Sample) - SLIK OJK NPL Monitoring"
+    dbt_model: "other_regulatory"
+    task_script: "regulatory_output_other_regulatory.py"
+    schedule: "0 9 * * *"
+    sla_time: "09:00"
+    active: true
+
+  # Regulatory Output D (Sample)
+  - id: other_sample_regulatory
+    name: "Regulatory Output D (Sample) - Bank Indonesia Macro"
+    dbt_model: "daily_loan_performance"
+    schedule: "0 7 * * 1"
+    sla_time: "08:00"
+    active: true

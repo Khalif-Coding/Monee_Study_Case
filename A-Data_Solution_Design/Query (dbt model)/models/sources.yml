@@ -1,0 +1,24 @@
+version: 2
+
+sources:
+  - name: raw_monee
+    database: monee-fintech-prod  
+    schema: raw                  
+    description: "Raw tables ingested via append-only CDC streaming from Google Datastream"
+    tables:
+      - name: loan_accounts
+        description: "Raw loan accounts data (2 TB). Grain: one record per loan state/version mutation."
+        loaded_at_field: ingestion_date
+        columns:
+          - name: loan_id
+            description: "Unique loan identifier"
+          - name: ingestion_date
+            description: "Physical partitioning column in BigQuery"
+
+      - name: loan_payments
+        description: "Raw payment transactions data (3 TB). Captures SUCCESS, FAILED, and REVERSED status mutations."
+        loaded_at_field: ingestion_date
+
+      - name: users
+        description: "Customer demographic data (50 GB). SCD versions updated over time."
+        loaded_at_field: ingestion_date

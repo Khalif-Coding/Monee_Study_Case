@@ -1,0 +1,10 @@
+__pycache__/
+*.pyc
+*.pyo
+*.egg-info/
+.env
+/tmp/
+target/
+dbt_packages/
+.DS_Store
+*.swp
